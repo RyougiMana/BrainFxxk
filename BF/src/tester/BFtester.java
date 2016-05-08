@@ -8,7 +8,9 @@ import java.io.InputStreamReader;
 
 public class BFtester {
 	public static void main(String[] args) throws IOException{
+	//	Hello world
 		String inputStr = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
+	//	String inputStr = ",>++++++[<-------->-],,[<+>-],<.>."; 4 3 answer is 7.
 		byte[] input = inputStr.getBytes();
 		
 		//Initialization
@@ -46,6 +48,7 @@ public class BFtester {
 				output[ptr] = tmpStr.getBytes()[0];
 				break;
 			case '.':
+				System.out.println("test");
 				bos.write(output[ptr]);
 				break;
 			case '[':
