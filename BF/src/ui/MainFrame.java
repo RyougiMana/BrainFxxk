@@ -17,9 +17,13 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 
 import rmi.RemoteHelper;
 import service.IOService;
@@ -37,7 +41,13 @@ public class MainFrame extends JFrame {
 	private boolean toLogin;
 	private String username;
 	
+	private JPanel areaPanel;
+	private JScrollPane codeScrollPane;
+	private JScrollPane inputScrollPane;
+	private JScrollPane outputScrollPane;
 	private JTextArea textArea;
+	private JTextArea inputArea;
+	private JTextArea outputArea;
 	private JLabel resultLabel;
 	
 	private JMenu userMenu;
@@ -152,11 +162,74 @@ public class MainFrame extends JFrame {
 		executeMenuItem.addActionListener(new MenuItemActionListener());
 		logMenuItem.addActionListener(new MenuItemActionListener());
 		
-		textArea = new JTextArea();
+		areaPanel = new JPanel();
+//		areaPanel.setBackground(Color.BLACK);
+		areaPanel.setLayout(null);
+		areaPanel.setSize(500, 300);
+		areaPanel.setLocation(0, 100);
+		frame.add(areaPanel, BorderLayout.CENTER);
+		
+		textArea = new JTextArea("Code Section. Your code goes here......");
 		textArea.setMargin(new Insets(10, 10, 10, 10));
-		textArea.setBackground(Color.LIGHT_GRAY);
-		frame.add(textArea, BorderLayout.CENTER);
-
+//		textArea.setBackground(Color.LIGHT_GRAY);
+		areaPanel.add(textArea, BorderLayout.NORTH);
+		
+		codeScrollPane = new JScrollPane(textArea,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		JScrollBar codeScroll=new JScrollBar();
+		codeScrollPane.setVerticalScrollBar(codeScroll);
+		
+		codeScrollPane.setSize(500, 200);
+		codeScrollPane.setLocation(0, 0);
+		codeScrollPane.setVisible(true);
+		codeScrollPane.setOpaque(false);
+		codeScrollPane.getViewport().setOpaque(false);
+		areaPanel.add(codeScrollPane);
+		
+		inputArea = new JTextArea("Input Section");
+		inputArea.setMargin(new Insets(10, 10, 10, 10));
+		inputArea.setSize(250, 140);
+		inputArea.setLocation(0, 200);
+//		inputArea.setBackground(Color.YELLOW);
+		areaPanel.add(inputArea);
+		
+		inputScrollPane = new JScrollPane(inputArea,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		JScrollBar inputScroll=new JScrollBar();
+		inputScrollPane.setVerticalScrollBar(inputScroll);
+		
+		inputScrollPane.setSize(250, 140);
+		inputScrollPane.setLocation(0, 200);
+		inputScrollPane.setVisible(true);
+		inputScrollPane.setOpaque(false);
+		inputScrollPane.getViewport().setOpaque(false);
+		areaPanel.add(inputScrollPane);
+		
+		outputArea = new JTextArea("Output Section");
+		outputArea.setMargin(new Insets(10, 10, 10, 10));
+		outputArea.setSize(250, 140);
+		outputArea.setLocation(250, 200);
+//		textArea.setBackground(Color.RED);
+		areaPanel.add(outputArea);
+		
+		outputScrollPane = new JScrollPane(outputArea,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		JScrollBar outputScroll=new JScrollBar();
+		outputScrollPane.setVerticalScrollBar(outputScroll);
+		
+		outputScrollPane.setSize(250, 140);
+		outputScrollPane.setLocation(250, 200);
+		outputScrollPane.setVisible(true);
+		outputScrollPane.setOpaque(false);
+		outputScrollPane.getViewport().setOpaque(false);
+		areaPanel.add(outputScrollPane);
+		
 		// 鏄剧ず缁撴灉
 		resultLabel = new JLabel();
 		resultLabel.setText("result");
@@ -189,7 +262,7 @@ public class MainFrame extends JFrame {
 		passwordField.setVisible(_t);
 		confirmButton.setVisible(_t);
 		cancelButton.setVisible(_t);
-		textArea.setVisible(!_t);
+		areaPanel.setVisible(!_t);
 		resultLabel.setVisible(!_t);
 		getContentPane().revalidate();
 	}
