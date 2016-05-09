@@ -1,14 +1,16 @@
 package ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
@@ -25,6 +27,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
+import analyzer.Analyzer;
+import analyzer.AnalyzerImpl;
 import rmi.RemoteHelper;
 import service.IOService;
 import service.UserService;
@@ -37,6 +41,8 @@ public class MainFrame extends JFrame {
 	private IOService ioService;
 	private UserService userService;
 	
+	private Analyzer analyzer;
+	
 	private boolean isLogin;
 	private boolean toLogin;
 	private String username;
@@ -48,7 +54,11 @@ public class MainFrame extends JFrame {
 	private JTextArea textArea;
 	private JTextArea inputArea;
 	private JTextArea outputArea;
-	private JLabel resultLabel;
+	private JLabel statusLabel;
+	
+	private JMenu commandMenu;
+	private JMenuItem undoMenuItem;
+	private JMenuItem redoMenuItem;
 	
 	private JMenu userMenu;
 	private JMenuItem logMenuItem;
@@ -65,6 +75,8 @@ public class MainFrame extends JFrame {
 		remoteHelper = RemoteHelper.getInstance();
 		ioService = remoteHelper.getIOService();
 		userService = remoteHelper.getUserService();
+		
+		analyzer = new AnalyzerImpl(this);
 		
 		// 鍒涘缓绐椾綋
 		JFrame frame = new JFrame("BF Client");
@@ -148,6 +160,13 @@ public class MainFrame extends JFrame {
 		JMenu versionMenu = new JMenu("Version");
 		menuBar.add(versionMenu);
 		
+		JMenu commandMenu = new JMenu("Cmd");
+		menuBar.add(commandMenu);
+		JMenuItem undoMenuItem = new JMenuItem("Undo");
+		commandMenu.add(undoMenuItem);
+		JMenuItem redoMenuItem = new JMenuItem("Redo");
+		commandMenu.add(redoMenuItem);
+		
 		userMenu = new JMenu();
 		menuBar.add(userMenu);
 		logMenuItem = new JMenuItem();
@@ -161,9 +180,10 @@ public class MainFrame extends JFrame {
 		exitMenuItem.addActionListener(new MenuItemActionListener());
 		executeMenuItem.addActionListener(new MenuItemActionListener());
 		logMenuItem.addActionListener(new MenuItemActionListener());
+		undoMenuItem.addActionListener(new MenuItemActionListener());
+		redoMenuItem.addActionListener(new MenuItemActionListener());
 		
 		areaPanel = new JPanel();
-//		areaPanel.setBackground(Color.BLACK);
 		areaPanel.setLayout(null);
 		areaPanel.setSize(500, 300);
 		areaPanel.setLocation(0, 100);
@@ -171,8 +191,8 @@ public class MainFrame extends JFrame {
 		
 		textArea = new JTextArea("Code Section. Your code goes here......");
 		textArea.setMargin(new Insets(10, 10, 10, 10));
-//		textArea.setBackground(Color.LIGHT_GRAY);
-		areaPanel.add(textArea, BorderLayout.NORTH);
+		textArea.setLineWrap(true);
+		textArea.setWrapStyleWord(true);
 		
 		codeScrollPane = new JScrollPane(textArea,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -192,7 +212,8 @@ public class MainFrame extends JFrame {
 		inputArea.setMargin(new Insets(10, 10, 10, 10));
 		inputArea.setSize(250, 140);
 		inputArea.setLocation(0, 200);
-//		inputArea.setBackground(Color.YELLOW);
+		inputArea.setLineWrap(true);
+		inputArea.setWrapStyleWord(true);
 		areaPanel.add(inputArea);
 		
 		inputScrollPane = new JScrollPane(inputArea,
@@ -213,7 +234,8 @@ public class MainFrame extends JFrame {
 		outputArea.setMargin(new Insets(10, 10, 10, 10));
 		outputArea.setSize(250, 140);
 		outputArea.setLocation(250, 200);
-//		textArea.setBackground(Color.RED);
+		outputArea.setLineWrap(true);
+		outputArea.setWrapStyleWord(true);
 		areaPanel.add(outputArea);
 		
 		outputScrollPane = new JScrollPane(outputArea,
@@ -231,9 +253,9 @@ public class MainFrame extends JFrame {
 		areaPanel.add(outputScrollPane);
 		
 		// 鏄剧ず缁撴灉
-		resultLabel = new JLabel();
-		resultLabel.setText("result");
-		frame.add(resultLabel, BorderLayout.SOUTH);
+		statusLabel = new JLabel();
+		statusLabel.setText("result");
+		frame.add(statusLabel, BorderLayout.SOUTH);
 		
 		isLogin = false;
 		toLogin = true;
@@ -263,7 +285,7 @@ public class MainFrame extends JFrame {
 		confirmButton.setVisible(_t);
 		cancelButton.setVisible(_t);
 		areaPanel.setVisible(!_t);
-		resultLabel.setVisible(!_t);
+		statusLabel.setVisible(!_t);
 		getContentPane().revalidate();
 	}
 	
@@ -281,8 +303,15 @@ public class MainFrame extends JFrame {
 			else if (cmd.equals("Save")) {
 				textArea.setText("Save");
 			}
-			else if (cmd.equals("Run")) {
-				resultLabel.setText("Hello, result");
+			else if (cmd.equals("Execute")) {
+				String input = textArea.getText();
+				String output;
+				try {
+					output = analyzer.analysis(input);
+					outputArea.setText(output);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 			else if (cmd.equals("Log in")){
 				toLogin = true;
@@ -311,4 +340,11 @@ public class MainFrame extends JFrame {
 		}
 
 	}
+	
+	public byte getByte() throws IOException{
+		BufferedReader br = new BufferedReader(new StringReader(inputArea.getText()));
+		String input = br.readLine();
+		return input.getBytes()[0];
+	}
+	
 }
