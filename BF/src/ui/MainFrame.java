@@ -27,8 +27,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
-import analyzer.Analyzer;
-import analyzer.AnalyzerImpl;
 import rmi.RemoteHelper;
 import service.IOService;
 import service.UserService;
@@ -40,8 +38,6 @@ public class MainFrame extends JFrame {
 	private RemoteHelper remoteHelper;
 	private IOService ioService;
 	private UserService userService;
-	
-	private Analyzer analyzer;
 	
 	private boolean isLogin;
 	private boolean toLogin;
@@ -75,8 +71,6 @@ public class MainFrame extends JFrame {
 		remoteHelper = RemoteHelper.getInstance();
 		ioService = remoteHelper.getIOService();
 		userService = remoteHelper.getUserService();
-		
-		analyzer = new AnalyzerImpl(this);
 		
 		// 鍒涘缓绐椾綋
 		JFrame frame = new JFrame("BF Client");
@@ -306,12 +300,8 @@ public class MainFrame extends JFrame {
 			else if (cmd.equals("Execute")) {
 				String input = textArea.getText();
 				String output;
-				try {
-					output = analyzer.analysis(input);
-					outputArea.setText(output);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+//				output = analyzer.analysis(input);
+//				outputArea.setText(output);
 			}
 			else if (cmd.equals("Log in")){
 				toLogin = true;
@@ -339,12 +329,6 @@ public class MainFrame extends JFrame {
 			}
 		}
 
-	}
-	
-	public byte getByte() throws IOException{
-		BufferedReader br = new BufferedReader(new StringReader(inputArea.getText()));
-		String input = br.readLine();
-		return input.getBytes()[0];
 	}
 	
 }
