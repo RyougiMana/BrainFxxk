@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.rmi.RemoteException;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -65,6 +66,8 @@ public class MainFrame extends JFrame {
 	private JPasswordField passwordField;
 	private JButton confirmButton;
 	private JButton cancelButton;
+	
+	private JFileChooser chooser;
 	
 	public MainFrame() {
 		
@@ -295,6 +298,20 @@ public class MainFrame extends JFrame {
 				textArea.setText("Open");
 			}
 			else if (cmd.equals("Save")) {
+				System.out.println("ttt");
+				chooser = new JFileChooser();
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//设置只能选择目录
+				int returnVal = chooser.showOpenDialog(getParent());
+				if(returnVal == JFileChooser.APPROVE_OPTION) {
+				  String selectPath =chooser.getSelectedFile().getPath();
+				  try {
+					boolean hasSave = ioService.writeFile(selectPath, username, "");
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+		//		  System.out.println ( "你选择的目录是：" + selectPath );
+				  chooser.setVisible(false);
+				}
 				textArea.setText("Save");
 			}
 			else if (cmd.equals("Execute")) {
