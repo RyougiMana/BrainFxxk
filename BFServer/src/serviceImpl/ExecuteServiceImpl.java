@@ -1,12 +1,9 @@
 //璇蜂笉瑕佷慨鏀规湰鏂囦欢鍚�
 package serviceImpl;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 
 import service.ExecuteService;
-import service.UserService;
 
 public class ExecuteServiceImpl implements ExecuteService {
 
@@ -27,8 +24,6 @@ public class ExecuteServiceImpl implements ExecuteService {
 		
 		//Output stream initialization
 		StringBuffer sb = new StringBuffer();
-		//Input stream initialization
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
 		//Code analysis
 		int ptr = 0;/*data pointer*/
@@ -50,6 +45,9 @@ public class ExecuteServiceImpl implements ExecuteService {
 				output[ptr] --;
 				break;
 			case ',':
+				if(para[paramPtr] == 10 || (para[paramPtr] == 13) || (para[paramPtr]) == 32){
+					paramPtr ++;
+				}
 				output[ptr] = para[paramPtr];
 				paramPtr ++;
 				break;
