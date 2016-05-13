@@ -7,6 +7,8 @@ import java.io.IOException;
 import service.IOService;
 
 public class IOServiceImpl implements IOService{
+
+	String path = "/Users/okamiji/Desktop/BF/files";
 	
 	@Override
 	public boolean writeFile(String file, String userId, String fileName) {
@@ -25,13 +27,12 @@ public class IOServiceImpl implements IOService{
 
 	@Override
 	public String readFile(String userId, String fileName) {
-		// TODO Auto-generated method stub
+	//	if()
 		return "OK";
 	}
 
 	@Override
 	public String readFileList(String userId) {
-		// TODO Auto-generated method stub
 		return "OK";
 	}
 	
