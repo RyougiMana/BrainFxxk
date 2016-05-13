@@ -65,9 +65,9 @@ public class MainFrame extends JFrame {
 	private JTextField usernameField;
 	private JPasswordField passwordField;
 	private JButton confirmButton;
-	private JButton cancelButton;
+//	private JButton cancelButton;
 	
-	private JFileChooser chooser;
+	private OpenFrame openFrame;
 	
 	public MainFrame() {
 		
@@ -86,17 +86,17 @@ public class MainFrame extends JFrame {
 		usernameField = new JTextField();
 		passwordField = new JPasswordField();
 		confirmButton = new JButton("Confirm");
-		cancelButton = new JButton("Cancel");
+//		cancelButton = new JButton("Cancel");
 		
 		Dimension labelSize = new Dimension(65, 30);
 		Dimension fieldSize = new Dimension(100, 30);
-		Dimension buttonSize = new Dimension(80, 30);
+		Dimension buttonSize = new Dimension(120, 30);
 		usernameLabel.setSize(labelSize);
 		passwordLabel.setSize(labelSize);
 		usernameField.setSize(fieldSize);
 		passwordField.setSize(fieldSize);
 		confirmButton.setSize(buttonSize);
-		cancelButton.setSize(buttonSize);
+//		cancelButton.setSize(buttonSize);
 		
 		int startX = (int) ((frame.getWidth() - fieldSize.getWidth() - labelSize.getWidth()) / 2);
 		int startY = (int) frame.getHeight() / 4;
@@ -104,8 +104,9 @@ public class MainFrame extends JFrame {
 		passwordLabel.setLocation(startX, (int) (startY + fieldSize.getHeight() + 10));
 		usernameField.setLocation((int) (startX + labelSize.getWidth()), startY);
 		passwordField.setLocation((int) (startX + labelSize.getWidth()), (int) (startY + fieldSize.getHeight() + 10));
-		confirmButton.setLocation(startX, (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
-		cancelButton.setLocation((int) (startX + buttonSize.getWidth()), (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
+		confirmButton.setLocation((int) (startX + labelSize.getWidth() / 2), (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
+//		confirmButton.setLocation(startX, (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
+//		cancelButton.setLocation((int) (startX + buttonSize.getWidth()), (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
 		confirmButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				String name = usernameField.getText();
@@ -123,19 +124,19 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-		cancelButton.addMouseListener(new MouseAdapter(){
+/*		cancelButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				toLogin = false;
 				setToLogin(toLogin);
 			}
-		});
+		});*/
 		
 		frame.add(usernameLabel);
 		frame.add(passwordLabel);
 		frame.add(usernameField);
 		frame.add(passwordField);
 		frame.add(confirmButton);
-		frame.add(cancelButton);
+//		frame.add(cancelButton);
 		
 		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
@@ -280,7 +281,7 @@ public class MainFrame extends JFrame {
 		usernameField.setVisible(_t);
 		passwordField.setVisible(_t);
 		confirmButton.setVisible(_t);
-		cancelButton.setVisible(_t);
+//		cancelButton.setVisible(_t);
 		areaPanel.setVisible(!_t);
 		statusLabel.setVisible(!_t);
 		getContentPane().revalidate();
@@ -294,25 +295,14 @@ public class MainFrame extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
-			if (cmd.equals("Open")) {
-				textArea.setText("Open");
+			if(cmd.equals("New")){
+				textArea.setText("Code Section. Your code goes here......");
+			}
+			else if (cmd.equals("Open")) {
+				openFrame = new OpenFrame(ioService, username);
+				openFrame.setVisible(true);
 			}
 			else if (cmd.equals("Save")) {
-				System.out.println("ttt");
-				chooser = new JFileChooser();
-				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//设置只能选择目录
-				int returnVal = chooser.showOpenDialog(getParent());
-				if(returnVal == JFileChooser.APPROVE_OPTION) {
-				  String selectPath =chooser.getSelectedFile().getPath();
-				  try {
-					boolean hasSave = ioService.writeFile(selectPath, username, "");
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
-		//		  System.out.println ( "你选择的目录是：" + selectPath );
-				  chooser.setVisible(false);
-				}
-				textArea.setText("Save");
 			}
 			else if (cmd.equals("Execute")) {
 				String input = textArea.getText();
@@ -325,11 +315,19 @@ public class MainFrame extends JFrame {
 				setToLogin(toLogin);
 			}
 			else if (cmd.equals("Log out")){
-				toLogin = true;
-				isLogin = false;
-				username = "Welcome, guest!";
-				setToLogin(toLogin);
-				setUserModule();
+				boolean logoutSuccess = false;
+				try {
+					logoutSuccess = userService.logout(username);
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+				if(logoutSuccess){
+					toLogin = true;
+					isLogin = false;
+					username = "Welcome, guest!";
+					setToLogin(toLogin);
+					setUserModule();
+				}
 			}
 		}
 	}
