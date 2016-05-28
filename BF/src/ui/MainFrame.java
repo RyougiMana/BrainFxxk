@@ -2,6 +2,7 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollBar;
@@ -43,6 +45,7 @@ public class MainFrame extends JFrame {
 	private boolean isLogin;
 	private boolean toLogin;
 	private String username;
+	private String filename = null;
 	
 	private JPanel areaPanel;
 	private JScrollPane codeScrollPane;
@@ -67,8 +70,8 @@ public class MainFrame extends JFrame {
 	private JButton confirmButton;
 //	private JButton cancelButton;
 	
-	private FileOpenFrame openFrame;
-	private FileSaveFrame saveFrame;
+	private FileOpenFrame openFrame = null;
+	private FileSaveFrame saveFrame = null;
 	
 	public MainFrame() {
 		
@@ -175,7 +178,7 @@ public class MainFrame extends JFrame {
 
 		newMenuItem.addActionListener(new MenuItemActionListener());
 		openMenuItem.addActionListener(new MenuItemActionListener());
-		saveMenuItem.addActionListener(new SaveActionListener());
+		saveMenuItem.addActionListener(new MenuItemActionListener());
 		exitMenuItem.addActionListener(new MenuItemActionListener());
 		executeMenuItem.addActionListener(new MenuItemActionListener());
 		logMenuItem.addActionListener(new MenuItemActionListener());
@@ -297,11 +300,59 @@ public class MainFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("New")){
+				filename = null;
+				try {
+					if((filename != null && 
+							(!textArea.getText().equals(ioService.readFile(username, filename))))
+							||
+						(filename == null) && 
+							(!textArea.getText().equals("Code Section. Your code goes here......"))
+							){
+						int n = JOptionPane.showConfirmDialog(null, "You have not save the file, do you want to save it?", "Save before open", JOptionPane.YES_NO_OPTION);   
+						if (n == JOptionPane.YES_OPTION) {   
+							if(null == saveFrame){
+								saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+							}
+							saveFrame.setVisible(true);
+						}
+					}
+				} catch (HeadlessException | RemoteException e1) {
+					e1.printStackTrace();
+				}
 				textArea.setText("Code Section. Your code goes here......");
 			}
 			else if (cmd.equals("Open")) {
+				try {
+					if((filename != null && 
+							(!textArea.getText().equals(ioService.readFile(username, filename))))
+							||
+						(filename == null) && 
+							(!textArea.getText().equals("Code Section. Your code goes here......"))
+							){
+						int n = JOptionPane.showConfirmDialog(null, "You have not save the file, do you want to save it?", "Save before open", JOptionPane.YES_NO_OPTION);   
+						if (n == JOptionPane.YES_OPTION) {   
+							if(null == saveFrame){
+								saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+							}
+							saveFrame.setVisible(true);
+						}
+					}
+				} catch (HeadlessException | RemoteException e1) {
+					e1.printStackTrace();
+				}
 				openFrame = new FileOpenFrame(MainFrame.this, ioService, username);
 				openFrame.setVisible(true);
+			}
+			else if (cmd.equals("Save")) {
+				saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+				saveFrame.setVisible(true);
+			}
+			else if (cmd.equals("Exit")) {
+				if(null == saveFrame){
+					saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+				}
+				saveFrame.setVisible(true);
+				System.exit(0);
 			}
 			else if (cmd.equals("Execute")) {
 				String input = textArea.getText();
@@ -309,7 +360,7 @@ public class MainFrame extends JFrame {
 //				output = analyzer.analysis(input);
 //				outputArea.setText(output);
 			}
-			else if (cmd.equals("Log in")){
+			else if (cmd.equals("Log in")) {
 				toLogin = true;
 				setToLogin(toLogin);
 			}
@@ -344,15 +395,8 @@ public class MainFrame extends JFrame {
 	public void readFile(String content){
 		textArea.setText(content);
 	}
-	
-	class SaveActionListener implements ActionListener {
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
-			saveFrame.setVisible(true);
-		}
-
+	public void setFilename(String fileName){
+		filename = fileName;
 	}
-	
 }

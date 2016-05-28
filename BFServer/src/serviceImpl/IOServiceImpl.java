@@ -89,6 +89,10 @@ public class IOServiceImpl implements IOService{
 	@Override
 	public String readFile(String userId, String fileName) {
 		String currentFile = path + userId + "_" + fileName;
+		
+		initRecordList();
+		initFilterList(userId);
+		
 		if(filterList.contains(fileName)){
 			return readFile(currentFile);
 		}
