@@ -67,8 +67,8 @@ public class MainFrame extends JFrame {
 	private JButton confirmButton;
 //	private JButton cancelButton;
 	
-	private FileFrame openFrame;
-	private FileFrame saveFrame;
+	private FileOpenFrame openFrame;
+	private FileSaveFrame saveFrame;
 	
 	public MainFrame() {
 		
@@ -300,12 +300,8 @@ public class MainFrame extends JFrame {
 				textArea.setText("Code Section. Your code goes here......");
 			}
 			else if (cmd.equals("Open")) {
-				openFrame = new FileOpenFrame(ioService, username);
+				openFrame = new FileOpenFrame(MainFrame.this, ioService, username);
 				openFrame.setVisible(true);
-			}
-			else if (cmd.equals("Save")) {
-				saveFrame = new FileSaveFrame(ioService, username);
-				saveFrame.setVisible(true);
 			}
 			else if (cmd.equals("Execute")) {
 				String input = textArea.getText();
@@ -335,16 +331,26 @@ public class MainFrame extends JFrame {
 		}
 	}
 
+	public boolean writeFile(String fileName){
+		String file = textArea.getText();
+		try {
+			return ioService.writeFile(file, username, fileName);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public void readFile(String content){
+		textArea.setText(content);
+	}
+	
 	class SaveActionListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String code = textArea.getText();
-			try {
-				RemoteHelper.getInstance().getIOService().writeFile(code, "admin", "code");
-			} catch (RemoteException e1) {
-				e1.printStackTrace();
-			}
+			saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+			saveFrame.setVisible(true);
 		}
 
 	}

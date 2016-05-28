@@ -18,24 +18,26 @@ import service.IOService;
 @SuppressWarnings("serial")
 public class FileFrame extends JFrame{
 	
-	private final int WIDTH = 200;
-	private final int HEIGHT = 290;
+	protected final int WIDTH = 200;
+	protected final int HEIGHT = 290;
 	
-	private IOService ioService;
-	private String username;
-	private String[] fileList;
+	protected MainFrame mframe;
+	protected IOService ioService;
+	protected String username;
+	protected String[] fileList;
 	
-	private JScrollPane fileListPane;
-	private JPanel fileListPanel;
-	private JList<String> list;
-	private JTextArea titleArea;
-	private JButton confirmButton;
-	private JButton cancelButton;
+	protected JScrollPane fileListPane;
+	protected JPanel fileListPanel;
+	protected JList<String> list;
+	protected JTextArea titleArea;
+	protected JButton confirmButton;
+	protected JButton cancelButton;
 	
-	String selectedVal = null;
+	protected String selectedVal = null;
 	
-	public FileFrame(IOService io, String u){
+	public FileFrame(MainFrame mf, IOService io, String u){
 		
+		mframe = mf;
 		ioService = io;
 		username = u;
 		
@@ -78,16 +80,6 @@ public class FileFrame extends JFrame{
 		cancelButton.setSize(85, 30);
 		this.add(cancelButton);
 		
-		confirmButton.addMouseListener(new MouseAdapter(){
-			public void mouseClicked(MouseEvent e){
-				try {
-					ioService.readFile(username, selectedVal);
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
-		
 		cancelButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				FileFrame.this.dispose();
@@ -107,8 +99,11 @@ public class FileFrame extends JFrame{
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		fileList = returnList.split("\n");
-		if(fileList != null && fileList.length != 0){
+		if(returnList == null || returnList.length() == 0){
+			list = new JList<String>(new String[]{});
+		}
+		else{
+			fileList = returnList.split("\n");
 			list = new JList<String>(fileList);
 			list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 //			list.setVisibleRowCount(4);
@@ -122,9 +117,6 @@ public class FileFrame extends JFrame{
 				}
 			});
 			this.add(list);	
-		}
-		else{
-			list = new JList<String>(new String[]{});
 		}
 	}
 	
