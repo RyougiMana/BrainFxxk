@@ -67,7 +67,8 @@ public class MainFrame extends JFrame {
 	private JButton confirmButton;
 //	private JButton cancelButton;
 	
-	private OpenFrame openFrame;
+	private FileFrame openFrame;
+	private FileFrame saveFrame;
 	
 	public MainFrame() {
 		
@@ -299,10 +300,12 @@ public class MainFrame extends JFrame {
 				textArea.setText("Code Section. Your code goes here......");
 			}
 			else if (cmd.equals("Open")) {
-				openFrame = new OpenFrame(ioService, username);
+				openFrame = new FileOpenFrame(ioService, username);
 				openFrame.setVisible(true);
 			}
 			else if (cmd.equals("Save")) {
+				saveFrame = new FileSaveFrame(ioService, username);
+				saveFrame.setVisible(true);
 			}
 			else if (cmd.equals("Execute")) {
 				String input = textArea.getText();

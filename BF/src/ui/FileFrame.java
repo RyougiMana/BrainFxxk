@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -15,7 +16,7 @@ import javax.swing.ScrollPaneConstants;
 import service.IOService;
 
 @SuppressWarnings("serial")
-public class OpenFrame extends JFrame{
+public class FileFrame extends JFrame{
 	
 	private final int WIDTH = 200;
 	private final int HEIGHT = 290;
@@ -26,12 +27,14 @@ public class OpenFrame extends JFrame{
 	
 	private JScrollPane fileListPane;
 	private JPanel fileListPanel;
-	private JTextArea listArea;
+	private JList<String> list;
 	private JTextArea titleArea;
 	private JButton confirmButton;
 	private JButton cancelButton;
 	
-	public OpenFrame(IOService io, String u){
+	String selectedVal = null;
+	
+	public FileFrame(IOService io, String u){
 		
 		ioService = io;
 		username = u;
@@ -44,16 +47,9 @@ public class OpenFrame extends JFrame{
 		fileListPanel.setSize(200, 200);
 		this.add(fileListPanel);
 		
-		listArea = new JTextArea();
-		listArea.setLocation(0, 0);
-		listArea.setSize(0, 200);
-		listArea.setLineWrap(true);
-		listArea.setWrapStyleWord(true);
-		fileListPanel.add(listArea);
-		
 		initList();
 		
-		fileListPane = new JScrollPane(listArea,
+		fileListPane = new JScrollPane(list,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		
@@ -84,13 +80,17 @@ public class OpenFrame extends JFrame{
 		
 		confirmButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
-				
+				try {
+					ioService.readFile(username, selectedVal);
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		
 		cancelButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
-				OpenFrame.this.dispose();
+				FileFrame.this.dispose();
 			}
 		});
 		
@@ -101,18 +101,30 @@ public class OpenFrame extends JFrame{
 	}
 	
 	private void initList(){
+		String returnList = null;
 		try {
-			String list = ioService.readFileList(username);
-			fileList = list.split(",");
-			if(fileList != null && fileList.length != 0){
-				String listToShow = "";
-				for(int i=0; i<fileList.length; i++){
-					listToShow = listToShow + fileList[i]; 
+			returnList = ioService.readFileList(username);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		fileList = returnList.split("\n");
+		if(fileList != null && fileList.length != 0){
+			list = new JList<String>(fileList);
+			list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+//			list.setVisibleRowCount(4);
+			list.setLocation(20, 210);
+			list.setSize(200, 200);
+//			list.setFixedCellWidth(200);
+			list.addMouseListener(new MouseAdapter(){
+				public void mouseClicked(MouseEvent e){
+					selectedVal = list.getSelectedValue();
+					titleArea.setText(selectedVal);
 				}
-				listArea.setText(listToShow);
-			}
-		} catch (RemoteException e1) {
-			e1.printStackTrace();
+			});
+			this.add(list);	
+		}
+		else{
+			list = new JList<String>(new String[]{});
 		}
 	}
 	
