@@ -8,15 +8,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -103,7 +97,6 @@ public class MainFrame extends JFrame {
 		usernameField.setSize(fieldSize);
 		passwordField.setSize(fieldSize);
 		confirmButton.setSize(buttonSize);
-//		cancelButton.setSize(buttonSize);
 		
 		int startX = (int) ((frame.getWidth() - fieldSize.getWidth() - labelSize.getWidth()) / 2);
 		int startY = (int) frame.getHeight() / 4;
@@ -112,8 +105,7 @@ public class MainFrame extends JFrame {
 		usernameField.setLocation((int) (startX + labelSize.getWidth()), startY);
 		passwordField.setLocation((int) (startX + labelSize.getWidth()), (int) (startY + fieldSize.getHeight() + 10));
 		confirmButton.setLocation((int) (startX + labelSize.getWidth() / 2), (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
-//		confirmButton.setLocation(startX, (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
-//		cancelButton.setLocation((int) (startX + buttonSize.getWidth()), (int) (startY + fieldSize.getHeight() * 2 + + 10 * 2));
+		
 		confirmButton.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent e){
 				String name = usernameField.getText();
@@ -134,19 +126,12 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-/*		cancelButton.addMouseListener(new MouseAdapter(){
-			public void mouseClicked(MouseEvent e){
-				toLogin = false;
-				setToLogin(toLogin);
-			}
-		});*/
 		
 		frame.add(usernameLabel);
 		frame.add(passwordLabel);
 		frame.add(usernameField);
 		frame.add(passwordField);
 		frame.add(confirmButton);
-//		frame.add(cancelButton);
 		
 		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
@@ -291,7 +276,6 @@ public class MainFrame extends JFrame {
 		usernameField.setVisible(_t);
 		passwordField.setVisible(_t);
 		confirmButton.setVisible(_t);
-//		cancelButton.setVisible(_t);
 		areaPanel.setVisible(!_t);
 		statusLabel.setVisible(!_t);
 		getContentPane().revalidate();
@@ -308,6 +292,8 @@ public class MainFrame extends JFrame {
 			if(cmd.equals("New")){
 				filename = null;
 				textArea.setText("Code Section. Your code goes here......");
+				
+				versionMenu.removeAll();
 			}
 			else if (cmd.equals("Open")) {
 				try {
@@ -337,7 +323,6 @@ public class MainFrame extends JFrame {
 				}
 				openFrame = new FileOpenFrame(MainFrame.this, ioService, username);
 				openFrame.setVisible(true);
-				
 			}
 			else if (cmd.equals("Save")) {
 				String inputValue = null;
@@ -432,7 +417,6 @@ public class MainFrame extends JFrame {
 		versionMenu.removeAll();
 		
 		if(versionNum > 9){
-			System.out.println("sss");
 			for(int i=versionNum - 9; i<versionNum + 1; i++){
 				JMenuItem mItem = new JMenuItem(i+"");
 				mItem.addActionListener(new VersionActionListener());
@@ -440,7 +424,7 @@ public class MainFrame extends JFrame {
 			}
 		}
 		else{
-			for(int i=0; i<versionNum; i++){
+			for(int i=0; i<versionNum + 1; i++){
 				JMenuItem mItem = new JMenuItem(i+"");
 				mItem.addActionListener(new VersionActionListener());
 				versionMenu.add(mItem);
@@ -453,7 +437,6 @@ public class MainFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			String cmd = e.getActionCommand();
 			try {
-//				textArea.setText(ioService.readFile(username, filename + cmd));
 				String fileContent = ioService.readFile(username, filename + cmd);
 				readFile(fileContent);
 			} catch (RemoteException e1) {
