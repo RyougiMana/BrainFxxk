@@ -123,6 +123,9 @@ public class MainFrame extends JFrame {
 						username = name;
 						setUserModule();
 					}
+					else{
+						JOptionPane.showMessageDialog(null, "Wrong user name or password！");
+					}
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
@@ -301,24 +304,6 @@ public class MainFrame extends JFrame {
 			String cmd = e.getActionCommand();
 			if(cmd.equals("New")){
 				filename = null;
-				try {
-					if((filename != null && 
-							(!textArea.getText().equals(ioService.readFile(username, filename))))
-							||
-						(filename == null) && 
-							(!textArea.getText().equals("Code Section. Your code goes here......"))
-							){
-						int n = JOptionPane.showConfirmDialog(null, "You have not save the file, do you want to save it?", "Save before open", JOptionPane.YES_NO_OPTION);   
-						if (n == JOptionPane.YES_OPTION) {   
-							if(null == saveFrame){
-								saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
-							}
-							saveFrame.setVisible(true);
-						}
-					}
-				} catch (HeadlessException | RemoteException e1) {
-					e1.printStackTrace();
-				}
 				textArea.setText("Code Section. Your code goes here......");
 			}
 			else if (cmd.equals("Open")) {
@@ -329,12 +314,19 @@ public class MainFrame extends JFrame {
 						(filename == null) && 
 							(!textArea.getText().equals("Code Section. Your code goes here......"))
 							){
-						int n = JOptionPane.showConfirmDialog(null, "You have not save the file, do you want to save it?", "Save before open", JOptionPane.YES_NO_OPTION);   
+						int n = JOptionPane.showConfirmDialog(null, "The file has not been saved, save it?", "Save before open", JOptionPane.YES_NO_OPTION);   
 						if (n == JOptionPane.YES_OPTION) {   
-							if(null == saveFrame){
-								saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
+							if(null == filename){
+								String inputValue = JOptionPane.showInputDialog("Please input the file name: ");
+								try {
+									ioService.writeFile(textArea.getText(), username, inputValue);
+								} catch (RemoteException e1) {
+									e1.printStackTrace();
+								}
 							}
-							saveFrame.setVisible(true);
+							else{
+								ioService.writeFile(textArea.getText(), username, filename);
+							}
 						}
 					}
 				} catch (HeadlessException | RemoteException e1) {
@@ -344,14 +336,34 @@ public class MainFrame extends JFrame {
 				openFrame.setVisible(true);
 			}
 			else if (cmd.equals("Save")) {
-				saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
-				saveFrame.setVisible(true);
+				String inputValue = null;
+				boolean hasSpace = false;
+				if(null == filename){
+					inputValue = JOptionPane.showInputDialog("Please input the file name: ");
+					for(int i=0; i<inputValue.length(); i++){
+						if(inputValue.substring(i, i+1).equals(" ")){
+							hasSpace = true;
+							break;
+						}
+					}
+					
+				}
+				else{
+					inputValue = filename;
+				}
+				if(inputValue != null && !hasSpace){
+					filename = inputValue;
+					try {
+						ioService.writeFile(textArea.getText(), username, filename);
+					} catch (RemoteException e1) {
+						e1.printStackTrace();
+					}
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "File name format is not correct！");
+				}
 			}
 			else if (cmd.equals("Exit")) {
-				if(null == saveFrame){
-					saveFrame = new FileSaveFrame(MainFrame.this, ioService, username);
-				}
-				saveFrame.setVisible(true);
 				System.exit(0);
 			}
 			else if (cmd.equals("Execute")) {
