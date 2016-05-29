@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -71,7 +72,9 @@ public class MainFrame extends JFrame {
 //	private JButton cancelButton;
 	
 	private FileOpenFrame openFrame = null;
-	private FileSaveFrame saveFrame = null;
+	int versionNum = 0;
+	
+	JMenu versionMenu;
 	
 	public MainFrame() {
 		
@@ -162,7 +165,7 @@ public class MainFrame extends JFrame {
 		JMenuItem executeMenuItem = new JMenuItem("Execute");
 		runMenu.add(executeMenuItem);
 		
-		JMenu versionMenu = new JMenu("Version");
+		versionMenu = new JMenu("Version");
 		menuBar.add(versionMenu);
 		
 		JMenu commandMenu = new JMenu("Cmd");
@@ -334,6 +337,7 @@ public class MainFrame extends JFrame {
 				}
 				openFrame = new FileOpenFrame(MainFrame.this, ioService, username);
 				openFrame.setVisible(true);
+				
 			}
 			else if (cmd.equals("Save")) {
 				String inputValue = null;
@@ -389,6 +393,8 @@ public class MainFrame extends JFrame {
 					username = "Welcome, guest!";
 					setToLogin(toLogin);
 					setUserModule();
+					
+					versionMenu.removeAll();
 				}
 			}
 		}
@@ -405,10 +411,60 @@ public class MainFrame extends JFrame {
 	}
 	
 	public void readFile(String content){
-		textArea.setText(content);
+		String version;
+		if(content.length() <= 4){
+			version = content;
+		}
+		else{
+			version = content.substring(content.length() - 5, content.length());
+		}
+		
+		int index = 0;
+		for(int i=0; i<version.length(); i++){
+			if(version.substring(i, i+1).equals(" ")){
+				index = i + 1;
+			}
+		}
+		versionNum = Integer.parseInt(version.substring(index));
+		int minusLength = version.substring(index).length();
+		textArea.setText(content.substring(0, content.length() - minusLength - 1));
+
+		versionMenu.removeAll();
+		
+		if(versionNum > 9){
+			System.out.println("sss");
+			for(int i=versionNum - 9; i<versionNum + 1; i++){
+				JMenuItem mItem = new JMenuItem(i+"");
+				mItem.addActionListener(new VersionActionListener());
+				versionMenu.add(mItem);
+			}
+		}
+		else{
+			for(int i=0; i<versionNum; i++){
+				JMenuItem mItem = new JMenuItem(i+"");
+				mItem.addActionListener(new VersionActionListener());
+				versionMenu.add(mItem);
+			}
+		}
 	}
 
+	class VersionActionListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String cmd = e.getActionCommand();
+			try {
+//				textArea.setText(ioService.readFile(username, filename + cmd));
+				String fileContent = ioService.readFile(username, filename + cmd);
+				readFile(fileContent);
+			} catch (RemoteException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	
 	public void setFilename(String fileName){
 		filename = fileName;
 	}
+	
 }

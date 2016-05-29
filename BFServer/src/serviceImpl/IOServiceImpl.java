@@ -106,11 +106,13 @@ public class IOServiceImpl implements IOService{
 //TODO
 				if(fileInfo[0].equals(filename.substring(0, fileInfo[0].length()))){
 					if(fileInfo[0].length() == filename.length()){
-						return readFile(filePath + fileInfo[1]) + 0;
+//TODO						System.out.println(filename);
+						return readFile(filePath + fileInfo[1]) + " " + fileInfo[1];
 					}
 					else{
-						int version = Integer.parseInt(filename.substring(fileInfo[0].length()));
-						return readFile(filePath + fileInfo[version]) + version;
+						int version = Integer.parseInt(filename.substring(fileInfo[0].length()));/* current version */
+						filePath = path + username + "/" + filename.substring(0, fileInfo[0].length()) + "/";
+						return readFile(filePath + version) + " " + fileInfo[1];/* The later version represent all versions. */
 					}
 				}
 			}	
