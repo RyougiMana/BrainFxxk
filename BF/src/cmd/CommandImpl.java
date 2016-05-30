@@ -16,7 +16,6 @@ public class CommandImpl implements Command {
 	
 	@Override
 	public void execute() {
-		System.out.println("execute");
 		if(exceed){
 			String tmp = mf.textArea.getText();
 			mf.textArea.setText(tmp + content);	
@@ -36,6 +35,7 @@ public class CommandImpl implements Command {
 		}
 		else{
 			String tmp = mf.textArea.getText();
+			System.out.println(content);
 			mf.textArea.setText(tmp + content);
 		}
 	}

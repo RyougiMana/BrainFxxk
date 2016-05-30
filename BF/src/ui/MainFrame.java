@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,6 +27,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
+import cmd.Command;
+import cmd.CommandImpl;
+import cmd.CommandManager;
 import rmi.RemoteHelper;
 import service.IOService;
 import service.UserService;
@@ -46,7 +51,7 @@ public class MainFrame extends JFrame {
 	private JScrollPane codeScrollPane;
 	private JScrollPane inputScrollPane;
 	private JScrollPane outputScrollPane;
-	private JTextArea textArea;
+	public JTextArea textArea;
 	private JTextArea inputArea;
 	private JTextArea outputArea;
 	private JLabel statusLabel;
@@ -63,12 +68,15 @@ public class MainFrame extends JFrame {
 	private JTextField usernameField;
 	private JPasswordField passwordField;
 	private JButton confirmButton;
-//	private JButton cancelButton;
 	
 	private FileOpenFrame openFrame = null;
 	int versionNum = 0;
 	
 	JMenu versionMenu;
+	
+	fThread thread;
+	boolean exceed = true;
+	CommandManager cm = new CommandManager();
 	
 	public MainFrame() {
 		
@@ -79,7 +87,7 @@ public class MainFrame extends JFrame {
 		// 鍒涘缓绐椾綋
 		JFrame frame = new JFrame("BF Client");
 		frame.setLayout(new BorderLayout());
-		frame.setSize(500, 400);
+		frame.setSize(500, 384);
 		frame.setLocation(400, 200);
 		
 		usernameLabel = new JLabel("Username");
@@ -87,7 +95,6 @@ public class MainFrame extends JFrame {
 		usernameField = new JTextField();
 		passwordField = new JPasswordField();
 		confirmButton = new JButton("Confirm");
-//		cancelButton = new JButton("Cancel");
 		
 		Dimension labelSize = new Dimension(65, 30);
 		Dimension fieldSize = new Dimension(100, 30);
@@ -247,7 +254,7 @@ public class MainFrame extends JFrame {
 		
 		// 鏄剧ず缁撴灉
 		statusLabel = new JLabel();
-		statusLabel.setText("result");
+		statusLabel.setText("");
 		frame.add(statusLabel, BorderLayout.SOUTH);
 		
 		isLogin = false;
@@ -258,6 +265,9 @@ public class MainFrame extends JFrame {
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
+		
+		thread = new fThread();
+		thread.start();
 	}
 	
 	public void setUserModule(){
@@ -382,6 +392,12 @@ public class MainFrame extends JFrame {
 					versionMenu.removeAll();
 				}
 			}
+			else if (cmd.equals("Undo")){
+				cm.undo();
+			}
+			else if (cmd.equals("Redo")){
+				cm.redo();
+			}
 		}
 	}
 
@@ -430,6 +446,8 @@ public class MainFrame extends JFrame {
 				versionMenu.add(mItem);
 			}
 		}
+		
+		thread.setIndex(textArea.getText().length());
 	}
 
 	class VersionActionListener implements ActionListener {
@@ -445,6 +463,86 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	class fThread extends Thread{
+		String content = textArea.getText();
+		String minusContent = new String();
+		int index = textArea.getText().length();
+		int length = 0;
+		int minusLength = 0;
+		
+		public void setIndex(int i){
+			index = i;
+		}
+		
+		public void run(){
+			while(true){
+				try {
+					fThread.sleep(60);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+		//		System.out.println("running");
+				if((length != Math.abs(textArea.getText().length() - index) &&
+						(index != textArea.getText().length())
+						)){
+					if(exceed){
+						/* increase */
+						if(textArea.getText().length() > index + length){
+							length = textArea.getText().length() - index;
+							content = textArea.getText().substring(index, index + length);
+				//			System.out.println(content);
+							Command cmd = new CommandImpl(MainFrame.this, content, exceed);
+							cm.executeCommand(cmd);
+							content = textArea.getText();
+						}
+						else{
+							index = textArea.getText().length() + 1;
+							System.out.println("change direction");
+							exceed = false;
+							length = 0;
+							minusLength = 1;
+							minusContent = content.substring(content.length() - minusLength, content.length());
+							Command cmd = new CommandImpl(MainFrame.this, minusContent, exceed);
+							cm.executeCommand(cmd);
+						}
+					}
+				}
+				if((index != textArea.getText().length()) && 
+						(index != (textArea.getText().length() + minusLength))){
+					if(!exceed){
+						/* decrease */
+						if(textArea.getText().length() <= index - minusLength){
+							/*
+							 * index : length of text area before any operation
+							 * length : length = 0
+							 * minus length : length of eliminate words
+							 * content : content of text area before any operation
+							 * minus content : content of eliminate words
+							 * */
+							minusLength = index - textArea.getText().length();
+					//		System.out.println("length " + minusLength);
+							minusContent = content.substring(content.length() - minusLength, content.length());
+					//		System.out.println("new cmd " + minusContent);
+							Command cmd = new CommandImpl(MainFrame.this, minusContent, exceed);
+							cm.executeCommand(cmd);
+						}
+						else{
+							index = textArea.getText().length() - 1;
+							System.out.println("change direction");
+							exceed = true;
+							minusLength = 0;
+							length = 1;
+							content = textArea.getText().substring(index, index + length);
+							minusContent = new String();
+							Command cmd = new CommandImpl(MainFrame.this, content, exceed);
+							cm.executeCommand(cmd);
+						}
+						
+					}
+				}
+			}
+		}
+	}
 	
 	public void setFilename(String fileName){
 		filename = fileName;

@@ -26,7 +26,7 @@ public class CommandManager {
 //		cmd.execute();
 		
 		undoList.add(cmd);
-		System.out.println("undolist" + undoList.size());
+		
 		// 保留最近undoCount次操作，删除最早操作
 		if (undoCount != -1 && undoList.size() > undoCount) {
 			undoList.remove(0);
@@ -58,8 +58,6 @@ public class CommandManager {
 		if (redoList.size() <= 0) {
 			return;
 		}
-		
-		System.out.println("redo");
 		
 		Command cmd = ((Command)(redoList.get(redoList.size() - 1)));
 		cmd.execute();
