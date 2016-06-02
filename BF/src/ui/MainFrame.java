@@ -29,6 +29,7 @@ import cmd.Command;
 import cmd.CommandImpl;
 import cmd.CommandManager;
 import rmi.RemoteHelper;
+import service.ExecuteService;
 import service.IOService;
 import service.UserService;
 
@@ -39,6 +40,7 @@ public class MainFrame extends JFrame {
 	private RemoteHelper remoteHelper;
 	private IOService ioService;
 	private UserService userService;
+	private ExecuteService executeService;
 	
 	private boolean isLogin;
 	private boolean toLogin;
@@ -81,6 +83,7 @@ public class MainFrame extends JFrame {
 		remoteHelper = RemoteHelper.getInstance();
 		ioService = remoteHelper.getIOService();
 		userService = remoteHelper.getUserService();
+		executeService = remoteHelper.getExecuteService();
 		
 		// 鍒涘缓绐椾綋
 		JFrame frame = new JFrame("BF Client");
@@ -158,11 +161,11 @@ public class MainFrame extends JFrame {
 		versionMenu = new JMenu("Version");
 		menuBar.add(versionMenu);
 		
-		JMenu commandMenu = new JMenu("Cmd");
+		commandMenu = new JMenu("Cmd");
 		menuBar.add(commandMenu);
-		JMenuItem undoMenuItem = new JMenuItem("Undo");
+		undoMenuItem = new JMenuItem("Undo");
 		commandMenu.add(undoMenuItem);
-		JMenuItem redoMenuItem = new JMenuItem("Redo");
+		redoMenuItem = new JMenuItem("Redo");
 		commandMenu.add(redoMenuItem);
 		
 		userMenu = new JMenu();
@@ -364,10 +367,15 @@ public class MainFrame extends JFrame {
 				System.exit(0);
 			}
 			else if (cmd.equals("Execute")) {
-				String input = textArea.getText();
-				String output;
-//				output = analyzer.analysis(input);
-//				outputArea.setText(output);
+				String code = textArea.getText();
+				String param = inputArea.getText();
+				String output = new String();
+				try {
+					output = executeService.execute(code, param);
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+				outputArea.setText(output);
 			}
 			else if (cmd.equals("Log in")) {
 				toLogin = true;
