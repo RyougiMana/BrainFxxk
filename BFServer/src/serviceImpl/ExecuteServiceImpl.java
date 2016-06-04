@@ -2,6 +2,7 @@
 package serviceImpl;
 
 import java.rmi.RemoteException;
+import java.util.Arrays;
 
 import service.ExecuteService;
 
@@ -16,7 +17,7 @@ public class ExecuteServiceImpl implements ExecuteService {
 		byte[] para = param.getBytes();
 		
 		//Initialization
-		int size = 100;
+		int size = 2000;
 		byte[] output = new byte[size];
 		for(int i=0; i<size; i++){
 			output[i] = 0;
@@ -30,7 +31,7 @@ public class ExecuteServiceImpl implements ExecuteService {
 		int inputSize = input.length;
 		int codePtr = 0;/*code pointer*/
 		int paramPtr = 0;/*parameter pointer*/
-		while(codePtr != input.length){
+		while(codePtr < input.length){
 			switch(input[codePtr]){
 			case '>':
 				ptr ++;
@@ -45,10 +46,8 @@ public class ExecuteServiceImpl implements ExecuteService {
 				output[ptr] --;
 				break;
 			case ',':
-				if(para[paramPtr] == 10 || (para[paramPtr] == 13) || (para[paramPtr]) == 32){
-					paramPtr ++;
-				}
-				output[ptr] = para[paramPtr];
+				output[ptr] = paramPtr < para.length ? 
+						para[paramPtr] : 0;
 				paramPtr ++;
 				break;
 //				String tmpStr = br.readLine();
@@ -62,39 +61,49 @@ public class ExecuteServiceImpl implements ExecuteService {
 				break;
 			case '[':
 				if(output[ptr] == 0){
-					boolean hasRightParenthesis = false;
 					int tmpPtr = codePtr;
+					int level = 0;
 					for(; tmpPtr < inputSize; tmpPtr ++){
-						if(input[tmpPtr] == ']'){
-							hasRightParenthesis = true;
-							break;
+						if(input[tmpPtr] == '[') {
+							level ++;	
+						}
+						else if(input[tmpPtr] == ']'){
+							level --;
+							if(level == 0)
+								break;
 						}
 					}
-					if(!hasRightParenthesis){
+					if(level != 0 || input[tmpPtr] != ']'){
 						System.out.println("No matching right parenthesis, execution terminated!");
-						codePtr = tmpPtr --;
+						codePtr = input.length;
 					}
+					codePtr = tmpPtr + 1;
 				}
 				break;
 			case ']':
 				if(output[ptr] != 0){
 					int tmpPtr = codePtr;
+					int level = 0;
 					for(; tmpPtr >= 0; tmpPtr --){
-						if(input[tmpPtr] == '['){
-							codePtr = tmpPtr --;
-							break;
+						if(input[tmpPtr] == ']') {
+							level ++;
+						}
+						else if(input[tmpPtr] == '['){
+							level --;
+							if(level == 0) {
+								codePtr = tmpPtr --;
+								break;
+							}
 						}
 					}
 					if(tmpPtr < 0){
 						System.out.println("No matching left parenthesis, execution terminated!");
+						codePtr = input.length;
 					}
 				}
 				break;
 			default:
-				if(!((input[codePtr] == 10) || (input[codePtr] == 13))){
-					System.out.println(codePtr + " " + Byte.toString(input[codePtr]));
-					System.out.println("There exists wrong in code!");
-				}
+				break;
 			}
 			codePtr ++;
 		}
